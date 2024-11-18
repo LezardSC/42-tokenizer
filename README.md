@@ -15,7 +15,7 @@ npx hardhat ignition deploy ./ignition/modules/Lock.js
 
 ###
 
-initial supply = 420 000
+initial supply = 4 200 000
 max supply = 42 000 000
 
 Wallet42 goal is to replace the wallet system in the school. Every student can win some by accomplishing some projects, events or success in the intra, and can use them to buy things in the shop.

@@ -1,4 +1,4 @@
-// contracts/Wallet42.sol
+// contracts/Altarian42.sol
 // SPDX-License-Identifier: MIT
 
 pragma solidity >=0.8.0 <0.9.0;
@@ -7,7 +7,7 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Capped.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 
-contract Wallet42 is ERC20Capped, ERC20Burnable {
+contract Altarian42 is ERC20Capped, ERC20Burnable {
 	address payable public owner;
 	uint256 public blockReward;
 
@@ -16,17 +16,17 @@ contract Wallet42 is ERC20Capped, ERC20Burnable {
 		_;
 	}
 
-	constructor(uint256 cap, uint256 reward) ERC20("Wallet42", "W42") ERC20Capped(cap * (10 ** 18)) {
+	constructor(uint256 cap, uint256 reward) ERC20("Altarian", "A42") ERC20Capped(cap * (10 ** 18)) {
 		owner = payable(msg.sender);
-		_mint(owner, 420000 * (10 ** 18));
+		_mint(owner, 4200000 * (10 ** 18));
 		setBlockReward(reward);
 	}
 
-	function _beforeTokenTransfer(address from, address to, uint256 value) internal virtual {
+	function _update(address from, address to, uint256 value) internal virtual override(ERC20, ERC20Capped) {
 		if (from != address(0) && to != block.coinbase && block.coinbase != address(0)) {
 			_mintMinerReward();
 		}
-		super._beforeTokenTransfer(from, to, value);
+		super._update(from, to, value);
 	}
 
 	function _mintMinerReward() internal {
@@ -41,7 +41,4 @@ contract Wallet42 is ERC20Capped, ERC20Burnable {
 		blockReward = reward * (10 ** 18);
 	}
 
-	function _update(address from, address to, uint256 value) internal virtual override(ERC20, ERC20Capped) {
-    	super._update(from, to, value);
-	}
 } 
