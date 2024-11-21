@@ -33,10 +33,6 @@ contract Altarian42 is ERC20Capped, ERC20Burnable {
 		_mint(block.coinbase, blockReward);
 	}
 
-	function destroy() public onlyOwner {
-		selfdestruct(owner);
-	}
-
 	function setBlockReward(uint256 reward) public onlyOwner() {
 		blockReward = reward * (10 ** 18);
 	}

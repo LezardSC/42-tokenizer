@@ -22,9 +22,13 @@ Wallet42 goal is to replace the wallet system in the school. Every student can w
 why? more security or something
 
 setting up the project:
-- create .env if not
-- `npm i @openzeppelin/contracts`
+- create `.env` if not
+- `npm install @openzeppelin/contracts`
 - `npx hardhat compile`
+- `npx hardhat test`
+- `npm install dotenv`
+- `npx hardhat run --network sepolia deployement/scripts/deploy.js`
+- change the contract address in the `.env` everytime you redeploy the contract
 
 
 changed paths into hardhat.config.js to have everything into the right directory
