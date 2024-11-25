@@ -2,7 +2,7 @@ const hre = require("hardhat");
 
 async function main() {
 	const AltarianToken = await hre.ethers.getContractFactory("Altarian42");
-	const altarian42 = await AltarianToken.deploy(42000000n, 50n);
+	const altarian42 = await AltarianToken.deploy(42000000n);
 
 	await altarian42.waitForDeployment();
 
