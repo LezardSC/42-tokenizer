@@ -12,6 +12,7 @@ contract Altarian42 is ERC20Capped, ERC20Burnable {
 	mapping(address => string[]) private studentAchievements;
 
 	event RewardGiven(address indexed student, uint256 amount, string reason);
+	event GoodiePurchased(address indexed buyer, string item, uint256 cost);
 
 	modifier onlyOwner {
 		require(msg.sender == owner, "Only the owner can call this function");
@@ -36,7 +37,16 @@ contract Altarian42 is ERC20Capped, ERC20Burnable {
 		emit RewardGiven(student, amount, reason);
 	}
 
-	function getStudentAchievement(address student) public view returns (string [] memory) {
+	function buyGoodies(string memory item, uint256 cost) public {
+		require(bytes(item).length > 0, "Item name cannot be empty");
+		require(cost > 0, "Cost must be greater than zero");
+		require(balanceOf(msg.sender) >= cost * (10 ** 18), "Not enough balance to buy the item");
+	
+		_burn(msg.sender, cost * (10 ** 18));
+		emit GoodiePurchased(msg.sender, item, cost);
+	}
+
+	function getStudentAchievements(address student) public view returns (string [] memory) {
 		require(student != address(0), "Invalid student address");
 		return studentAchievements[student];
 	}
