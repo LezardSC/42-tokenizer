@@ -9,7 +9,7 @@ import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 
 contract Altarian42 is ERC20Capped, ERC20Burnable {
 	address payable public owner;
-	mapping(address => string[]) public studentAchievements;
+	mapping(address => string[]) private studentAchievements;
 
 	event RewardGiven(address indexed student, uint256 amount, string reason);
 
@@ -34,5 +34,10 @@ contract Altarian42 is ERC20Capped, ERC20Burnable {
 		_mint(student, amount * (10 ** 18));
 		studentAchievements[student].push(reason);
 		emit RewardGiven(student, amount, reason);
+	}
+
+	function getStudentAchievement(address student) public view returns (string [] memory) {
+		require(student != address(0), "Invalid student address");
+		return studentAchievements[student];
 	}
 }
