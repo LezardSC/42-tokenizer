@@ -22,13 +22,14 @@ Wallet42 goal is to replace the wallet system in the school. Every student can w
 why? more security or something
 
 setting up the project:
-- create `.env` if not
+- make sure you have node.js version 16.0.0 or higher. v20.9.0 is preferred because I'm sure it works, and I got problems with some versions.
+- create `.env` if not.
 - `npm install @openzeppelin/contracts`
+- `npm install dotenv`
 - `npx hardhat compile`
 - `npx hardhat test`
-- `npm install dotenv`
 - `npx hardhat run --network sepolia deployement/scripts/deploy.js`
-- change the contract address in the `.env` everytime you redeploy the contract
+- change the contract address in the `.env` everytime you redeploy the contract.
 
 
 changed paths into hardhat.config.js to have everything into the right directory
