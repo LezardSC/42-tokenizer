@@ -207,7 +207,7 @@ describe("Altarian42 contract with Multisig", function() {
 
 			await altarian42.executeTransaction(0);
 
-			const studentFinalBalance = await altarian42.balanceOf(tudent);
+			const studentFinalBalance = await altarian42.balanceOf(student);
 			expect(studentFinalBalance.sub(studentInitialBalance)).to.equal(
 				ethers.parseUnits(rewardAmount.toString(), 18)
 			);
@@ -232,7 +232,7 @@ describe("Altarian42 contract with Multisig", function() {
 			await expect(
 				altarian42.connect(addr3).buyGoodies("T-shirt", cost)
 			).to.emit(altarian42, "GoodiePurchased")
-			.withArgs(student, "T=shirt", cost);
+			.withArgs(student, "T-shirt", cost);
 
 			const studentBalance = await altarian42.balanceOf(student);
 			expect(studentBalance).to.equal(
@@ -283,7 +283,7 @@ describe("Altarian42 contract with Multisig", function() {
 
 			await expect(
 				altarian42.connect(addr1).transfer(addr2.address, transferAmount)
-			).to.be.revertedWith("ERC@): transfer amount exceeds balance");
+			).to.be.revertedWith("ERC20: transfer amount exceeds balance");
 		});
 	})
 });

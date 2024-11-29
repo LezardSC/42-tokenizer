@@ -61,7 +61,7 @@ contract Altarian42 is ERC20Capped, ERC20Burnable {
 	);
 
 	modifier onlyOwner() {
-		require(isOwner[msg.sender], "Only one of the owners can call this function");
+		require(isOwner[msg.sender], "Not owner");
 		_;
 	}
 
