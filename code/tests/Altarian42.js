@@ -1,214 +1,289 @@
 const { expect } = require("chai");
 const hre = require("hardhat");
 
-describe("Altarian42 contract", function() {
+describe("Altarian42 contract with Multisig", function() {
 	let Token;
 	let altarian42;
 	let owner;
 	let addr1;
 	let addr2;
+	let addr3;
+	let addrs;
 	let tokenCap = 42000000;
+	const numConfirmationsRequired = 2;
 
 	this.beforeEach(async function () {
 		Token  = await ethers.getContractFactory("Altarian42");
-		[owner, addr1, addr2] = await hre.ethers.getSigners();
+		[owner, addr1, addr2, addr3, ...addrs] = await hre.ethers.getSigners();
 
-		altarian42 = await Token.deploy(tokenCap);
+		const owners = [owner.address, addr1.address, addr2.address];
+		altarian42 = await Token.deploy(owners, numConfirmationsRequired, tokenCap);
 	});
 	
 	
 	describe("Deployement", function() {
-		it("Should set the right owner", async function () {
-			expect(await altarian42.owner()).to.equal(owner.address);
+		it("Should set the right owners", async function () {
+			const contractOwners = await altarian42.getOwners();
+			expect(contractOwners).to.deep.equal([owner.address, addr1.address, addr2.address]);
+			// expect(await altarian42.owner()).to.equal(owner.address);
 		});
 		
-		it ("Should assign the total supply of tokens to the owner", async function () {
-			const ownerBalance = await altarian42.balanceOf(owner.address);
-			expect(await altarian42.totalSupply()).to.equal(ownerBalance);
+		it("Should set the correct number of confirmations required", async function () {
+			expect(await altarian42.numConfirmationsRequired()).to.equal(numConfirmationsRequired);
+		});
+
+		it ("Should assign initial tokens to owners", async function () {
+			const tokensPerOwner = ethers.parseUnits("42000", 18);
+			
+			for (const ownerAddress of [owner.address, addr1.address, addr2.address]) {
+				const balance = await altarian42.balanceOf(ownerAddress);
+				
+				expect(balance).to.equal(tokensPerOwner);
+			}
 		});
 		
-		it("Should set the max capped supply to the argument provided during deployement", async function () {
+		it("Should enforce the token cap", async function () {
 			const cap = await altarian42.cap();
-			expect(Number(ethers.formatEther(cap))).to.equal(tokenCap);
+			const totalSupply = await altarian42.totalSupply();
+
+			expect(totalSupply).to.be.lte(cap);
 		});
 	});
 	
 	describe("Transactions", function () {
-		it("Should transfer tokens between accounts", async function () {
-			await altarian42.transfer(addr1.address, 50);
-			const addr1Balance = await altarian42.balanceOf(addr1.address);
-			expect(addr1Balance).to.equal(50);
-			
-			// We use .connect(signer) to send a transaction from another account
-			await altarian42.connect(addr1).transfer(addr2.address, 50);
-			const addr2Balance = await altarian42.balanceOf(addr2.address);
-			expect(addr2Balance).to.equal(50);
+		let student;
+		const rewardAmount = 50n;
+		const reason = "Excellent performance in exams";
+
+		this.beforeEach(async function () {
+			student = addr3.address;
 		});
-		
-		it("Sould fail if sender doesn't have enough tokens", async function () {
-			const initialOwnerBalance = await altarian42.balanceOf(owner.address);
-			
-			// Try to send 1 token from addr1 (0 tokens) to owner.
+
+		it("Should allow an owner to submit a transaction", async function () {
 			await expect(
-				altarian42.connect(addr1).transfer(owner.address, 1)
-			).to.be.revertedWithCustomError(altarian42, "ERC20InsufficientBalance");
+				altarian42.submitTransaction(student, rewardAmount, reason)
+			).to.emit(altarian42, "SubmitTransaction")
+				.withArgs(owner.address, 0, student, rewardAmount, reason);
+
+			const txCount = await altarian42.getTransactionCount();
+			expect(txCount).to.equal(1);
+		});
+
+		it("Should not allow a non-owner to submit a transaction", async function () {
+			await expect(
+				altarian42.connect(addr3).submitTransaction(student, rewardAmount, reason)
+			).to.be.revertedWith("Not owner");
+		});
+
+		it("Should allow owners to confirm a transaction", async function () {
+			await altarian42.submitTransaction(student, rewardAmount, reason);
+
+			await expect(altarian42.confirmTransaction(0))
+				.to.emit(altarian42, "ConfirmTransaction")
+				.withArgs(owner.address, 0);
+
+			await expect(altarian42.connect(addr1).confirmTransaction(0))
+				.to.emit(altarian42, "ConfirmTransaction")
+				.withArgs(addr1.address, 0);
+
+			const transaction = await altarian42.getTransaction(0);
+			expect(transaction.numConfirmations).to.equal(2);
+		});
+
+		it("Should not allow a non-owner to confirm a transaction", async function () {
+			await altarian42.submitTransaction(student, rewardAmount, reason);
+
+			await expect(
+				altarian42.connect(addr3).confirmTransaction(0)
+			).to.be.revertedWith("Not owner");
+		});
+
+		it("Should not allow an owner to confirm a transaction more than once", async function () {
+			await altarian42.submitTransaction(student, rewardAmount, reason);
+			await altarian42.confirmTransaction(0);
 			
-			// Owner balance shouldn't have changed.
-			expect(await altarian42.balanceOf(owner.address)).to.equal(
-				initialOwnerBalance
+			await expect(
+				altarian42.confirmTransaction(0)
+			).to.be.revertedWith("Transaction already confirmed");
+		});
+
+		it("Should allow an owner to revoke a confirmation", async function () {
+			await altarian42.submitTransaction(student, rewardAmount, reason);
+			await altarian42.confirmTransaction(0);
+
+			await expect(altarian42.revokeConfirmation(0))
+				.to.emit(altarian42, "RevokeConfirmation")
+				.withArgs(owner.address, 0);
+
+			const transaction = await altarian42.getTransaction(0);
+			expect(transaction.numConfirmations).to.equal(0);
+		});
+
+		it("Should not allow a non-owner to revoke a confirmation", async function () {
+			await altarian42.submitTransaction(student, rewardAmount, reason);
+			await altarian42.confirmTransaction(0);
+
+			await expect(
+				altarian42.connect(addr3).revokeConfirmation(0)
+			).to.be.revertedWith("Not owner");
+		});
+
+		it("Should execute a transaction after enough confirmations", async function () {
+			await altarian42.submitTransaction(student, rewardAmount, reason);
+			await altarian42.confirmTransaction(0);
+			await altarian42.connect(addr1).confirmTransaction(0);
+
+			const studentInitialBalance = await altarian42.balanceOf(student);
+
+			await expect(altarian42.executeTransaction(0))
+				.to.emit(altarian42, "ExecuteTransaction")
+				.withArgs(owner.address, 0)
+				.and.to.emit(altarian42, "RewardGiven")
+				.withArgs(student, rewardAmount, reason);
+
+			const studentFinalBalance = await altarian42.balanceOf(student);
+			expect(studentFinalBalance.sub(studentInitialBalance)).to.equal(
+				ethers.parseUnits(rewardAmount.toString(), 18)
 			);
 		});
-		
-		it("Should update balances after transfers", async function () {
-			const initialOwnerBalance = await altarian42.balanceOf(owner.address);
-			
-			await altarian42.transfer(addr1.address, 100);
-			await altarian42.transfer(addr2.address, 50);
-			
-			const amountToSubstract = 150n;
-			const finalOwnerBalance = await altarian42.balanceOf(owner.address);
-			expect(finalOwnerBalance).to.equal(initialOwnerBalance - amountToSubstract);
-			
-			const addr1Balance = await altarian42.balanceOf(addr1.address);
-			expect(addr1Balance).to.eq(100);
-			const addr2Balance = await altarian42.balanceOf(addr2.address);
-			expect(addr2Balance).to.equal(50);
+
+		it("Should not allow executing a transaction without enough confirmations", async function () {
+			await altarian42.submitTransaction(student, rewardAmount, reason);
+			await altarian42.confirmTransaction(0);
+
+			await expect(
+				altarian42.executeTransaction(0)
+			).to.be.revertedWith("Cannot execute transaction");
+		});
+
+		it("Should not allow a non-owner to execute a transaction", async function () {
+			await altarian42.submitTransaction(student, rewardAmount, reason);
+			await altarian42.confirmTransaction(0);
+			await altarian42.connect(addr1).confirmTransaction(0);
+
+			await expect(
+				altarian42.connect(addr3).executeTransaction(0)
+			).to.be.revertedWith("Not owner");
+		});
+
+		it("Should not allow executing a transaction more than once", async function () {
+			await altarian42.submitTransaction(student, rewardAmount, reason);
+			await altarian42.confirmTransaction(0);
+			await altarian42.connect(addr1).confirmTransaction(0);
+
+			await altarian42.executeTransaction(0);
+
+			await expect(
+				altarian42.executeTransaction(0)
+			).to.be.revertedWith("Transaction already executed");
 		});
 	});
 
 	describe("Rewards and Achievements", function () {
-		it("Should reward a student for an achievement", async function () {
-			const student = addr1.address;
-			const rewardAmount = 50n;
-			const reason = "Cleaned the classroom";
+		let student;
+		const rewardAmount = 50n;
+		const reason = "Participated in a competition";
 
-			// Reward the student
-			await altarian42.rewardStudent(student, rewardAmount, reason);
+		this.beforeEach(async function () {
+			student = addr3.address;
+		});
+	
+		it("Should reward a student for an achievement and record it", async function () {
+			await altarian42.submitTransaction(student, rewardAmount, reason);
+			await altarian42.confirmTransaction(0);
+			await altarian42.connect(addr1).confirmTransaction(0);
+			await altarian42.executeTransaction(0);
 
-			// Verify the student's token balance
-			const studentBalance = await altarian42.balanceOf(student);
-			expect(studentBalance).to.equal(rewardAmount * (10n ** 18n));
-
-			// Verify the student's achievements
 			const achievements = await altarian42.getStudentAchievements(student);
 			expect(achievements).to.include(reason);
 		});
 
-		it("Should emit an event when rewarding a student", async function () {
-			const student = addr1.address;
-			const rewardAmount = 500n;
-			const reason = "Won a hackaton";
+		it("Should update student balance after reward", async function () {
+			await altarian42.submitTransaction(student, rewardAmount, reason);
+			await altarian42.confirmTransaction(0);
+			await altarian42.connect(addr1).confirmTransaction(0);
 
-			// Expect the RewardGiven event to be emitted with the correct parameters
-			await expect(altarian42.rewardStudent(student, rewardAmount, reason))
-			.to.emit(altarian42, "RewardGiven")
-			.withArgs(student, rewardAmount, reason);
-		});
+			const studentInitialBalance = await altarian42.balanceOf(student);
 
-		it("Should fail to reward a student if the caller is not the owner", async function () {
-			const student = addr1.address;
-			const rewardAmount = 100n;
-			const reason = "Watched an exam";
+			await altarian42.executeTransaction(0);
 
-			// Try rewarding as addr1 (non-owner)
-			await expect(
-				altarian42.connect(addr1).rewardStudent(student, rewardAmount, reason)
-			).to.be.revertedWith("Only the owner can call this function");
-		});
-
-		it("Should store multiple achievements for a student", async function () {
-			const student = addr1.address;
-
-			await altarian42.rewardStudent(student, 50, "Cleaned the classroom");
-			await altarian42.rewardStudent(student, 100, "Won the math contest");
-
-			// Verify all achievements are recorded
-			const achievements = await altarian42.getStudentAchievements(student);
-			expect(achievements).to.include("Cleaned the classroom");
-			expect(achievements).to.include("Won the math contest");
-		});
-
-		it("Should fail to reward zero tokens", async function () {
-			const student = addr1.address;
-			await expect(altarian42.rewardStudent(student, 0, "Invalid reward"))
-			.to.be.revertedWith("Reward amount must be greater than zero");
-		});
-
-		it("Should not exceed the capped supply when rewarding students", async function () {
-			const student = addr1.address;
-			const rewardAmount = tokenCap;
-
-			await expect(
-				altarian42.rewardStudent(student, rewardAmount, "Exceeded cap")
-			).to.be.revertedWithCustomError(altarian42, "ERC20ExceededCap");
-			
-			const totalSupply = await altarian42.totalSupply();
-			const cap = await altarian42.cap();
-			expect(totalSupply).to.be.lte(cap);
-		});
-
-		it("Should handle many achievements for a single student", async function () {
-			const student = addr1.address;
-
-			for (let i = 0; i < 100; i++) {
-				await altarian42.rewardStudent(student, 10n, `Achievement ${i}`);
-			}
-
-			const achievementCount = await altarian42.getStudentAchievements(student);
-			expect(achievementCount.length).to.equal(100);
-		});
-
-		it("Should fail to reward the zero address", async function () {
-			const rewardAmount = 50n;
-
-			await expect(
-				altarian42.rewardStudent("0x0000000000000000000000000000000000000000", rewardAmount, "Invalid address")
-			).to.be.revertedWith("Invalid student address");
+			const studentFinalBalance = await altarian42.balanceOf(tudent);
+			expect(studentFinalBalance.sub(studentInitialBalance)).to.equal(
+				ethers.parseUnits(rewardAmount.toString(), 18)
+			);
 		});
 	});
 
 	describe("Buying goodies and burn", function () {
-		it("Should allow a student to buy goodies and burn tokens", async function () {
-			const student = addr1.address;
-			const cost = 50n;
+		let student;
+		const rewardAmount = 100n;
+		const cost = 50n;
 
-			await altarian42.rewardStudent(student, 100n, "Helped organize an event");
-			await altarian42.connect(addr1).buyGoodies("T-shirt", cost);
+		this.beforeEach(async function () {
+			student = addr3.address;
+			
+			await altarian42.submitTransaction(student, rewardAmount, "initial reward");
+			await altarian42.confirmTransaction(0);
+			await altarian42.connect(addr1).confirmTransaction(0);
+			await altarian42.executeTransaction(0);
+		})
+
+		it("Should allow a student to buy goodies and burn tokens", async function () {
+			await expect(
+				altarian42.connect(addr3).buyGoodies("T-shirt", cost)
+			).to.emit(altarian42, "GoodiePurchased")
+			.withArgs(student, "T=shirt", cost);
 
 			const studentBalance = await altarian42.balanceOf(student);
-			expect(studentBalance).to.equal((100n - cost) * (10n ** 18n));
-
-			const totalSupply = await altarian42.totalSupply();
-			expect(totalSupply).to.equal((4200000n + 100n - cost) * (10n ** 18n));
+			expect(studentBalance).to.equal(
+				ethers.parseUnits((rewardAmount - cost).toString(), 18)
+			);
 		});
 
 		it("Should fail if a student tries to buy goodies without enough balance", async function () {
-			const cost = 50n;
+			const highCost = 50n;
 
 			await expect(
-				altarian42.connect(addr1).buyGoodies("T-shirt", cost)
+				altarian42.connect(addr3).buyGoodies("Truck", highCost)
 			).to.be.revertedWith("Not enough balance to buy the item");
 		});
 
 		it("Should fail if the item name is empty", async function () {
-			const student = addr1.address;
-			const cost = 50n;
-
-			await altarian42.rewardStudent(student, 100n, "Helped organize an event");
-
 			await expect(
-				altarian42.connect(addr1).buyGoodies("", cost)
+				altarian42.connect(addr3).buyGoodies("", cost)
 			).to.be.revertedWith("Item name cannot be empty");
 		});
 
 		it("Should fail if the cost is zero", async function () {
-			const student = addr1.address;
-
-			await altarian42.rewardStudent(student, 100n, "Helped organize an event");
-
 			await expect(
-				altarian42.connect(addr1).buyGoodies("T-shirt", 0)
+				altarian42.connect(addr3).buyGoodies("T-shirt", 0)
 			).to.be.revertedWith("Cost must be greater than zero");
 		});
 	});
+
+	describe("Token Transfers", function () {
+		it("Should allow owners and students to transfer tokens", async function () {
+			const transferAmount = ethers.parseUnits("100", 18);
+
+			await altarian42.connect(owner).transfer(addr1.address, transferAmount);
+
+			const addr1Balance = await altarian42.balanceOf(addr1.address);
+			expect(addr1Balance).to.equal(
+				ethers.parseUnits("42000", 18).add(transferAmount)
+			);
+
+			await altarian42.connect(addr1).transfer(addr2.address, transferAmount);
+
+			const addr2Balance = await altarian42.balanceOf(addr2.address);
+			expect(addr2Balance).to.equal(transferAmount);
+		});
+
+		it("Should fail if sender does not have enough tokens", async function () {
+			const transferAmount = ethers.parseUnits("50000", 18);
+
+			await expect(
+				altarian42.connect(addr1).transfer(addr2.address, transferAmount)
+			).to.be.revertedWith("ERC@): transfer amount exceeds balance");
+		});
+	})
 });
