@@ -25,7 +25,6 @@ describe("Altarian42 contract with Multisig", function() {
 		it("Should set the right owners", async function () {
 			const contractOwners = await altarian42.getOwners();
 			expect(contractOwners).to.deep.equal([owner.address, addr1.address, addr2.address]);
-			// expect(await altarian42.owner()).to.equal(owner.address);
 		});
 		
 		it("Should set the correct number of confirmations required", async function () {
@@ -142,7 +141,7 @@ describe("Altarian42 contract with Multisig", function() {
 				.withArgs(student, rewardAmount, reason);
 
 			const studentFinalBalance = await altarian42.balanceOf(student);
-			expect(studentFinalBalance.sub(studentInitialBalance)).to.equal(
+			expect(studentFinalBalance - studentInitialBalance).to.equal(
 				ethers.parseUnits(rewardAmount.toString(), 18)
 			);
 		});
@@ -208,7 +207,7 @@ describe("Altarian42 contract with Multisig", function() {
 			await altarian42.executeTransaction(0);
 
 			const studentFinalBalance = await altarian42.balanceOf(student);
-			expect(studentFinalBalance.sub(studentInitialBalance)).to.equal(
+			expect(studentFinalBalance - studentInitialBalance).to.equal(
 				ethers.parseUnits(rewardAmount.toString(), 18)
 			);
 		});
@@ -241,7 +240,7 @@ describe("Altarian42 contract with Multisig", function() {
 		});
 
 		it("Should fail if a student tries to buy goodies without enough balance", async function () {
-			const highCost = 50n;
+			const highCost = 150n;
 
 			await expect(
 				altarian42.connect(addr3).buyGoodies("Truck", highCost)
@@ -262,20 +261,35 @@ describe("Altarian42 contract with Multisig", function() {
 	});
 
 	describe("Token Transfers", function () {
-		it("Should allow owners and students to transfer tokens", async function () {
+		it("Should allow the owner to transfer tokens to another owner", async function () {
 			const transferAmount = ethers.parseUnits("100", 18);
-
+		  
+			const initialBalanceAddr1 = await altarian42.balanceOf(addr1.address);
+		  
 			await altarian42.connect(owner).transfer(addr1.address, transferAmount);
-
-			const addr1Balance = await altarian42.balanceOf(addr1.address);
-			expect(addr1Balance).to.equal(
-				ethers.parseUnits("42000", 18).add(transferAmount)
-			);
-
-			await altarian42.connect(addr1).transfer(addr2.address, transferAmount);
-
-			const addr2Balance = await altarian42.balanceOf(addr2.address);
-			expect(addr2Balance).to.equal(transferAmount);
+		  
+			const finalBalanceAddr1 = await altarian42.balanceOf(addr1.address);
+			const expectedBalanceAddr1 = initialBalanceAddr1 + transferAmount;
+		  
+			expect(finalBalanceAddr1).to.equal(expectedBalanceAddr1);
+		  });
+		
+		it("Should allow an owner to transfer tokens to a non-owner", async function () {
+		const transferAmount = ethers.parseUnits("100", 18);
+		
+		const initialBalanceAddr1 = await altarian42.balanceOf(addr1.address);
+		const initialBalanceAddr2 = await altarian42.balanceOf(addr2.address);
+		
+		await altarian42.connect(addr1).transfer(addr2.address, transferAmount);
+		
+		const finalBalanceAddr1 = await altarian42.balanceOf(addr1.address);
+		const finalBalanceAddr2 = await altarian42.balanceOf(addr2.address);
+		
+		const expectedBalanceAddr1 = initialBalanceAddr1 - transferAmount;
+		const expectedBalanceAddr2 = initialBalanceAddr2 + transferAmount;
+		
+		expect(finalBalanceAddr1).to.equal(expectedBalanceAddr1);
+		expect(finalBalanceAddr2).to.equal(expectedBalanceAddr2);
 		});
 
 		it("Should fail if sender does not have enough tokens", async function () {
@@ -283,7 +297,7 @@ describe("Altarian42 contract with Multisig", function() {
 
 			await expect(
 				altarian42.connect(addr1).transfer(addr2.address, transferAmount)
-			).to.be.revertedWith("ERC20: transfer amount exceeds balance");
+			).to.be.revertedWithCustomError(altarian42, "ERC20InsufficientBalance");
 		});
 	})
 });
