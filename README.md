@@ -16,6 +16,7 @@ The contract implements a multisignature (multisig) technology to enhance securi
 - [Dependencies](#dependencies)
 - [Usage](#usage)
 - [Testing the Contract on Remix](#testing-the-contract-on-remix)
+- [More documentation](#more-documentation)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -65,7 +66,7 @@ We limited the number of owners to a maximum of 10 to maintain a manageable and 
 
 #### Utilizing OpenZeppelin Contracts
 
-We leveraged OpenZeppelin's contracts for ERC20, ERC20Capped, and ERC20Burnable functionalities. OpenZeppelin provides well-audited, secure, and industry-standard implementations of smart contract components. Using these contracts reduces the risk of contract components. Using these contracts reduces the risk of vulnerabilities and saves development time, allowing us to focus on implementing the custom logic specific to Altarian42.
+We leveraged OpenZeppelin's contracts for ERC20, ERC20Capped, and ERC20Burnable functionalities. OpenZeppelin provides well-audited, secure, and industry-standard implementations of smart contract components. Using these contracts reduces the risk of contract components,vulnerabilities and saves development time, allowing us to focus on implementing the custom logic specific to Altarian42.
 
 #### Development with Hardhat
 
@@ -90,7 +91,7 @@ When setting up the project, you'll need an Infura API key to connect to the Sep
 - **Node.js**: Versions 16.0.0 or higher (v20.9.0 recommended to avoid unexpected behaviour, but every recent versions should works).
 - **npm**: Comes with Node.js
 - **Git**: For version control.
-- **MetaMask Wallet**: or any other wallet. Recommended but not mandatory to add a private key in order to deploy the contract.
+- **MetaMask Wallet**: or any other wallet. Recommended but not mandatory  as we need to add a private key in order to deploy the contract.
 - **An Infura account**: or any other providers. You will need to update the hardhat configs if you decide to use something else than Infura. Required for connecting to the Sepolia test network.
 
 #### Installation Steps
@@ -145,6 +146,10 @@ When setting up the project, you'll need an Infura API key to connect to the Sep
 ## Testing the Contract on Remix
 
 If you prefer to test and interact with the `Altarian42` smart contract using the Remix IDE, see the [Testing on Remix Documentation](/documentation/en/Remix.md)
+
+## More documentation
+
+If you want to know more about the project, [check the project documentation](/documentation/en/Altarian42.md).
 
 ## Contributing
 
