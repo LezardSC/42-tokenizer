@@ -140,7 +140,9 @@ When setting up the project, you'll need an Infura API key to connect to the Sep
 
 ## Usage
 - **Earning Tokens**: Students earn tokens through predefined achievements, projects, and events.
+To see more about the reward and achievements, see the [documentation](/documentation/en/RewardsAndAchievements.md).
 - **Spending Tokens**: Tokens can be spent in the school shop to purchase items, promoting engagement.
+To see more about the reward and achievements, see the [documentation](/documentation/en/PurchasingAndBurning.md)
 - **Administrative Actions**: Owners can propose and approve transactions via the multisig mechanism, ensuring secure governance.
 
 ## Testing the Contract on Remix

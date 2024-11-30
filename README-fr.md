@@ -144,8 +144,10 @@ Lors de la configuration du projet, vous aurez besoin d'une clé API Infura pour
 - **Hardhat** : Environnement de développement pour compiler, tester et déployer des Smart Contracts.
 
 ## Utilisation
-- **Earning Tokens** : Les étudiants gagnent des tokens grâce à des réalisations, des projets et des événements prédéfinis.
-- **Tokens de dépense** : Les tokens peuvent être dépensés dans la boutique de l'école pour acheter des articles, favorisant ainsi l'engagement.
+- **Gain de Tokens** : Les étudiants gagnent des tokens grâce à des achievements, des projets et des events prédéfinis.
+Pour en savoir plus sur les récompenses et achievements, [lisez la documentation sur le sujet](/documentation/fr/RewardsAndAchievements.md).
+- **Dépense de Tokens** : Les tokens peuvent être dépensés dans la boutique de l'école pour acheter des articles, favorisant ainsi l'engagement.
+Pour en savoir plus sur les achats de goodies et burn de tokens, lisez [la documentation sur le sujet](/documentation/fr/PurchasingAndBurning.md).
 - **Actions administratives** : Les propriétaires peuvent proposer et approuver des transactions via le mécanisme multisig, garantissant ainsi une gouvernance sécurisée.
 
 ## Tester le contrat sur Remix
