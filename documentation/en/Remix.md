@@ -119,7 +119,7 @@ You need to input the constructor parameters:
     2,
     1000000
 ```
-    Ensure you separate the parameters with commas and that the array of addresses is enclosed in square brackets [].
+Ensure you separate the parameters with commas and that the array of addresses is enclosed in square brackets [].
 
 ##### Deploying
 
