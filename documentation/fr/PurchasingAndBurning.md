@@ -1,41 +1,39 @@
-# Purchasing and Burning Tokens Documentation
+# Documentation sur l'achat et la destruction de tokens
 
-WIP, PRIVILEGIER VERSION ANGLAISE
+## Vue d'ensemble
 
-## Overview
+La fonctionnalité d'**Achat et destruction** de tokens permet aux étudiants de dépenser leurs tokens pour acquérir des articles (goodies) dans la boutique de l'école. Lorsqu'un achat est effectué, le nombre correspondant de tokens est détruit, réduisant ainsi l'offre totale et favorisant la rareté des tokens.
 
-The **Purchasing and Burning Tokens** functionality enables students to spend their tokens on items (goodies) in the school shop. When a purchase is made, the corresponding amount of tokens is burned, reducing the total supply and promoting token scarcity.
+## Détails d'implémentation
 
-## Implementation Details
-
-#### Functions
+#### Fonctions
 
 **buyGoodies**
 
-**Visibility: `public`**
+**Visibilité: `public`**
 
-**Purpose**: Allows students to purchase items by burning tokens.
+**But**: Permet aux étudiants d'acheter des articles en brûlant des tokens.
 
 ```solidity
     function buyGoodies(string memory item, uint256 cost) public
 ```
 
-- **Parameters**:
-    - `item`: Name of the item to purchase.
-    - `cost`: Cost of the item in tokens (without decimals).
+- **Paramètres**:
+    - `item`: Nom de l'article à acheter.
+    - `cost`: Coût de l'article en tokens (sans décimales).
 
-- **Function Logic**:
+- **Logique de la fonction**:
     
     1. **Validation**:
-        - Checks that `item` is not an empty string.
-        - Ensures `cost` is greater than zero.
-        - Verifies the sender has enough balance.
-    2. **Burning Tokens**:
-        - Burns the specified amount of tokens from the sender.
-    3. **Event Emission**:
-        - Emits the `GoodiePurchased` event.
+        - Vérifie que `item` n'est pas une chaîne vide.
+        - S'assure que `cost` est supérieur à zéro.
+        - Vérifie que l'expéditeur dispose d'un solde suffisant.
+    2. **Destruction des tokens**:
+        - Brûle (détruit) le montant spécifié de tokens provenant de l'expéditeur.
+    3. **Émission d'événement**:
+        - Émet l'événement `GoodiePurchased`.
 
-- **Code Snippet**:
+- **Extrait de code**:
 
 ```solidity
     function buyGoodies(string memory item, uint256 cost) public {
@@ -48,11 +46,11 @@ The **Purchasing and Burning Tokens** functionality enables students to spend th
     }
 ```
 
-#### Events
+#### Événements
 
 ##### GoodiePurchased
 
-Emitted when a purchase is made.
+Émis lorsqu'un achat est effectué.
 
 ```solidity
     event GoodiePurchased(
@@ -62,50 +60,50 @@ Emitted when a purchase is made.
     );
 ```
 
-- **Parameters**:
-    - `buyer`: Address of the student making the purchase.
-    - `item`: Name of the item purchased.
-    - `cost`: Cost of the item (without decimals).
+- **Paramètres**:
+    - `buyer`: Adresse de l'étudiant effectuant l'achat.
+    - `item`: Nom de l'article acheté.
+    - `cost`: Coût de l'article (sans décimales).
 
-## Workflow Summary
+## Déroulement des Opérations
 
-1. **Purchase Initiation**:
-    - Student calls `buyGoodies` with the item name and cost.
+1. **Initiation de l'achat**:
+    - L'étudiant appelle `buyGoodies` en fournissant le nom de l'article et son coût.
 2. **Validation**:
-    - Contract validates inputs and checks balance.
-3. **Token Burning**:
-    - Tokens are burned from the student's balance.
-4. **Event Emission**:
-    - ``GoodiePurchased` event is emitted.
+    - Le contrat valide les paramètres et vérifie le solde.
+3. **Destruction des tokens**:
+    - Les tokens sont brûlés (détruits) sur le solde de l'étudiant.
+4. **Émission d'événement**:
+    - L'événement `GoodiePurchased` est émis.
 
-## Usage Example
+## Exemple d'utilisation
 
-**Purchasing an Item**
+**Achat d'un article**
 
 ```solidity
-    // Student wants to buy a "Notebook" costing 30 tokens
+    // L'étudiant souhaite acheter un "Notebook" pour 30 tokens
     altarian42.connect(studentSigner).buyGoodies("Notebook", 30);
 ```
-- **Outcome**:
-    - 30 tokens are burned from the student's balance.
-    - Total supply decreases by 30 tokens.
+- **Résultat**:
+    - 30 tokens sont brûlés du solde de l'étudiant.
+    - L'offre totale diminue de 30 tokens.
 
-## Important Considerations
+## Considérations importantes
 
-- **Decimals Handling**:
-    - `cost` is specified without decimals; the contract adjusts for decimals internally.
-    - **Access Control**:
-        Any account with sufficient balance can call `buyGoodies`.
-    - **Event Emission**:
-        Facilitates tracking of purchases off-chain.
+- **Gestion des décimales**:
+    - `cost` est spécifié sans décimales ; le contrat ajuste les décimales en interne.
+    - **Contrôle d'accès**:
+        Tout compte disposant d'un solde suffisant peut appeler `buyGoodies`.
+    - **Émission d'événement**:
+        Facilite le suivi des achats hors chaîne.
 
-## Testing the Purchasing Functionality
+## Test de la fonctionnalité d'achat
 
-#### Test Cases
+#### Cas de test
 
-1. **Successful Purchase**
-    - **Test**: Student purchases an item successfully.
-    - **Expectation**: Tokens are burned; event is emitted.
+1. **Achat réussi**
+    - **Test**: L'étudiant achète un article avec succès.
+    - **Attendu**: Les tokens sont brûlés et l'événement est émis.
 
 ```solidity
     it("Should allow a student to buy goodies and burn tokens", async function () {
@@ -121,10 +119,10 @@ Emitted when a purchase is made.
     });
 ```
 
-2. **Insufficient Balance**
+2. **Solde insuffisant**
 
-- **Test**: Purchase fails if student lacks sufficient tokens.
-- **Expectation**: Transaction reverts with "Not enough balance to buy the item".
+- **Test**: L'achat échoue si l'étudiant ne dispose pas d'un nombre suffisant de tokens.
+- **Attendu**: La transaction est annulée avec le message "Not enough balance to buy the item".
 
 ```solidity
     it("Should fail if a student tries to buy goodies without enough balance", async function () {
@@ -136,10 +134,10 @@ Emitted when a purchase is made.
     });
 ```
 
-3. **Empty Item Name**
+3. **Nom d'article vide**
 
 - **Test**: Purchase fails if item name is empty.
-- **Expectation**: Transaction reverts with "Item name cannot be empty".
+- **Attendu**: La transaction est annulée avec le message "Item name cannot be empty".
 
 ```solidity
     it("Should fail if the item name is empty", async function () {
@@ -149,10 +147,10 @@ Emitted when a purchase is made.
     });
 ```
 
-4. **Zero Cost**
+4. **Coût zéro**
 
 - **Test**: Purchase fails if cost is zero.
-- **Expectation**: Transaction reverts with "Cost must be greater than zero".
+- **Attendu**: La transaction est annulée avec le message "Cost must be greater than zero".
 
 ```solidity
     it("Should fail if the cost is zero", async function () {
@@ -162,18 +160,18 @@ Emitted when a purchase is made.
     });
 ```
 
-## Security Considerations
+## Considérations de sécurité
 
-- **Reentrancy Safe**: Uses built-in functions that are safe from reentrancy attacks.
-- **Input Validation**: Prevents invalid purchases and unintended token burns.
-- **Open Access**: No restrictions on who can call `buyGoodies`, but balance checks are enforced.
+- **Sécurité contre les attaques par réentrance**: Utilise des fonctions intégrées qui sont protégées contre ce type d'attaque.
+- **Validation des entrées**: Empêche les achats invalides et les destructions de tokens involontaires.
+- **Accès ouvert**: Aucune restriction sur qui peut appeler `buyGoodies`, bien que des vérifications de solde soient effectuées.
 
-## Potential Extensions
+## Extensions potentielles
 
-- **Item Catalog**: Implement a predefined list of items with fixed prices.
-- **Purchase Records**: Record purchase history for each student.
+- **Catalogue d'articles**: Implémenter une liste prédéfinie d'articles avec des prix fixes.
+- **Historique des achats**: Enregistrer l'historique des achats pour chaque étudiant.
 
-## Interaction with Token Economics
+## Interaction avec l'économie des tokens
 
-- **Supply Reduction**: Burning tokens decreases total supply, potentially increasing token value.
-- **Incentivization**: Encourages students to earn tokens to spend on items.
+- **Réduction de l'offre**: La destruction de tokens diminue l'offre totale, ce qui peut potentiellement augmenter leur valeur.
+- **Incitation**: Encourage les étudiants à gagner des tokens afin de pouvoir les dépenser sur des articles.

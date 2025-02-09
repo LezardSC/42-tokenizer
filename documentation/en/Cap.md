@@ -9,10 +9,10 @@ The **Cap** functionality in the `Altarian42` contract enforces a maximum limit 
 - **Inheritance**: The contract inherits from `ERC20Capped`, which provides the cap functionality.
 
 ```Solidity
-	contract Altarian42 is ERC20Capped, ERC20 Burnable { ... }
+	contract Altarian42 is ERC20Capped, ERC20Burnable { ... }
 ```
 
-- **Cap Initialization**: The cap is set during contract deployement via the constructor.
+- **Cap Initialization**: The cap is set during contract deployment via the constructor.
 
 ```Solidity
 	constructor(

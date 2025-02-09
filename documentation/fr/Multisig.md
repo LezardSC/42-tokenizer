@@ -1,160 +1,148 @@
 # Documentation Multisig
 
-WIP, PRIVILEGIER VERSION ANGLAISE
+## Vue d’ensemble
 
-## Vue d'ensemble
+La fonctionnalité de **signature multiple (multisig)** dans le contrat `Altarian42` garantit que les actions critiques, telles que la récompense des étudiants avec des tokens, nécessitent l'approbation de plusieurs propriétaires. Cela renforce la sécurité et la gouvernance du système de tokens en empêchant les décisions unilatérales et en réduisant le risque d'abus ou d'erreurs.
 
-La fonctionnalité multisignature (multisig) du contrat `Altarian42` garantit que les actions critiques, telles que la récompense des étudiants avec des tokens, nécessitent l'approbation de plusieurs propriétaires. Cela renforce la sécurité et la gouvernance du système de tokens en empêchant les décisions unilatérales et en réduisant le risque d'abus ou d'erreurs.
+## Détails de l’implémentation
 
-## Détails de la mise en œuvre
+### **Structure de propriété**
 
-#### Structure de propriété
+- **Propriétaires** : Liste des adresses désignées comme propriétaires du contrat.
+- **Nombre de confirmations requises** : Le nombre minimum de confirmations des propriétaires nécessaire pour exécuter une transaction.
 
-- **Propriétaires** : Une liste d'adresses désignées comme propriétaires du contrat.
-- **Nombre de confirmations requises** : Le nombre minimum de confirmations de propriétaires nécessaires pour exécuter une transaction.
-
-###### Variables d'état
+#### **Variables d'état**
 
 ```solidity
-    address[] public owners ;
-    uint public numConfirmationsRequired ;
-    mapping(address => bool) public isOwner ;
+    address[] public owners;
+    uint public numConfirmationsRequired;
+    mapping(address => bool) public isOwner;
 ```
 
-- **owners** : Un tableau contenant les adresses de tous les propriétaires.
-- **numConfirmationsRequired** : Le nombre minimum de confirmations requises pour exécuter une transaction.
-- **isOwner** : Une correspondance permettant de vérifier rapidement si une adresse est un propriétaire.
+- **owners** : Un tableau stockant les adresses de tous les propriétaires.
+- **numConfirmationsRequired** : Le nombre minimum de confirmations requis pour exécuter une transaction.
+- **isOwner** : Une table de hachage permettant de vérifier rapidement si une adresse est propriétaire.
 
-###### Initialisation du constructeur
+### **Initialisation du Constructeur**
 
-Le constructeur définit les propriétaires et le nombre de confirmations nécessaires.
+Le constructeur initialise les propriétaires, définit le nombre de confirmations requis et s’assure que toutes les contraintes liées à la propriété sont respectées.
 
 ```solidity
     constructor(
-        adresse[] mémoire _propriétaires,
+        address[] memory _owners,
         uint _numConfirmationsRequired,
         uint256 cap
-    ) ERC20(« Altarian », « A42 ») ERC20Capped(cap * (10 ** 18)) {
-        require(_owners.length > 0, « Propriétaires requis ») ;
-        require(_owners.length <= 10, « Impossible d'avoir plus de 10 propriétaires ») ;
+    ) ERC20("Altarian", "A42") ERC20Capped(cap * (10 ** 18)) {
+        require(_owners.length > 0, "Owners required");
+        require(_owners.length <= 10, "Cannot have more than 10 owners");
         require(
             _numConfirmationsRequired > 0 &&
             _numConfirmationsRequired <= _owners.length,
-            « Nombre incorrect de confirmations requises »
-        ) ;
+            "Invalid number of required confirmations"
+        );
 
-        for (uint i = 0 ; i < _owners.length ; i++) {
-            address ownerAddr = _owners[i] ;
+        for (uint i = 0; i < _owners.length; i++) {
+            address ownerAddr = _owners[i];
 
-            require(ownerAddr != address(0), « Propriétaire non valide ») ;
-            require(!isOwner[ownerAddr], « Propriétaire non unique ») ;
+            require(ownerAddr != address(0), "Invalid owner");
+            require(!isOwner[ownerAddr], "Owner not unique");
 
-            isOwner[ownerAddr] = true ;
-            owners.push(ownerAddr) ;
+            isOwner[ownerAddr] = true;
+            owners.push(ownerAddr);
         }
-        numConfirmationsRequired = _numConfirmationsRequired ;
-
-        // Logique de distribution initiale des tokens...
+        numConfirmationsRequired = _numConfirmationsRequired;
     }
 ```
 
-#### Gestion des transactions
+## **Gestion des transactions**
 
-Les transactions sont proposées, confirmées et exécutées par le biais du mécanisme multisig.
+Les transactions sont proposées, confirmées et exécutées via le mécanisme multisig.
 
-###### `Transaction` Struct
+#### **Structure `Transaction`**
 
 ```solidity
     struct Transaction {
-        adresse étudiant ;
-        uint256 amount ;
-        string reason ;
-        bool executed ;
-        uint numConfirmations ;
+        address student;
+        uint256 amount;
+        string reason;
+        bool executed;
+        uint numConfirmations;
     }
 ```
 
-- `student` : L'adresse de l'étudiant à récompenser.
-- `amount` : La quantité de tokens à récompenser.
-- `reason` : Une description ou une raison pour la récompense.
-- `executed` : Un booléen indiquant si la transaction a été exécutée.
-- `numConfirmations` : Le nombre de confirmations que la transaction a reçu.
+- `student` : Adresse de l’étudiant à récompenser.
+- `amount` : Montant de tokens à attribuer.
+- `reason` : Raison de la récompense.
+- `executed` : Booléen indiquant si la transaction a été exécutée.
+- `numConfirmations` : Nombre de confirmations obtenues.
 
-###### Variables d'état pour les transactions
+#### **Variables d’état pour les transactions**
 
 ```solidity
-    Transaction[] public transactions ;
-    mapping(uint => mapping(address => bool)) public isConfirmed ;
+    Transaction[] public transactions;
+    mapping(uint => mapping(address => bool)) public isConfirmed;
 ```
 
-- ``transactions` : Un tableau contenant toutes les transactions proposées.
-- ``isConfirmed` : Un mapping imbriqué permettant de savoir quels propriétaires ont confirmé une transaction donnée.
+- `transactions` : n tableau stockant toutes les transactions proposées.
+- `isConfirmed` : Une table de hachage imbriquée permettant de suivre quels propriétaires ont confirmé une transaction donnée.
 
-#### Modifiers
+## **Modificateurs**
 
-Les modificateurs sont utilisés pour renforcer le contrôle d'accès et valider les états des transactions.
+Les modificateurs sont utilisés pour appliquer le contrôle d'accès et valider l'état des transactions.
 
 ```solidity
     modifier onlyOwner() {
-        require(isOwner[msg.sender], « Pas propriétaire ») ;
-        _ ;
+        require(isOwner[msg.sender], "Not owner");
+        _;
     }
 
     modifier txExists(uint _txIndex) {
-        require(_txIndex < transactions.length, « La transaction n'existe pas ») ;
-        _ ;
+        require(_txIndex < transactions.length, "Transaction does not exist");
+        _;
     }
 
     modifier notExecuted(uint _txIndex) {
-        require(!transactions[_txIndex].executed, « Transaction déjà exécutée ») ;
-        _ ;
+        require(!transactions[_txIndex].executed, "Transaction already executed");
+        _;
     }
 
     modifier notConfirmed(uint _txIndex) {
-        require(!isConfirmed[_txIndex][msg.sender], « Transaction déjà confirmée ») ;
-        _ ;
+        require(!isConfirmed[_txIndex][msg.sender], "Transaction already confirmed");
+        _;
     }
 ```
 
+## **Fonctions principales**
 
-#### Fonctions
-
-1. **submitTransaction**
-
-Permet à un propriétaire de proposer une nouvelle transaction.
-
-```solidity
+1. **submitTransaction** : Permet à un propriétaire de proposer une transaction.
+```Solidity
     function submitTransaction(
-        adresse _student,
-        uint256 _montant,
+        address _student,
+        uint256 _amount,
         string memory _reason
     ) public onlyOwner {
-        uint txIndex = transactions.length ;
+        uint txIndex = transactions.length;
 
         transactions.push(Transaction({
-            student : _student,
-            amount : _amount,
-            reason : _reason,
-            executed : false,
-            numConfirmations : 0
-        })) ;
+            student: _student,
+            amount: _amount,
+            reason: _reason,
+            executed: false,
+            numConfirmations: 0
+        }));
 
-        emit SubmitTransaction(msg.sender, txIndex, _student, _amount, _reason) ;
+        emit SubmitTransaction(msg.sender, txIndex, _student, _amount, _reason);
     }
 ```
+- ***Paramètres***:
+    - `_student` : L'adresse de l'étudiant à récompenser.
+    - `_amount` : Le montant de tokens à attribuer.
+    - `_reason` : La raison de la récompense.
+- ***Emit*** : Émet l'événement `SubmitTransaction`.
 
-- **Paramètres** :
-    - `_student` : Adresse de l'étudiant à récompenser.
-    - `_amount` : Montant des tokens à récompenser.
-    - `_reason` : Raison de la récompense.
 
-- **Emits** : L'événement `SubmitTransaction`.
-
-2. **confirmTransaction**
-
-Permet à un propriétaire de confirmer une transaction proposée.
-
-```solidity
+2. **confirmTransaction** : Permet à un propriétaire de confirmer une transaction existante.
+```Solidity
     function confirmTransaction(uint _txIndex)
         public
         onlyOwner
@@ -162,21 +150,20 @@ Permet à un propriétaire de confirmer une transaction proposée.
         notExecuted(_txIndex)
         notConfirmed(_txIndex)
     {
-        Stockage des transactions transaction = transactions[_txIndex] ;
-        transaction.numConfirmations += 1 ;
-        isConfirmed[_txIndex][msg.sender] = true ;
+        Transaction storage transaction = transactions[_txIndex];
+        transaction.numConfirmations += 1;
+        isConfirmed[_txIndex][msg.sender] = true;
 
-        emit ConfirmTransaction(msg.sender, _txIndex) ;
+        emit ConfirmTransaction(msg.sender, _txIndex);
     }
 ```
 
-- **Paramètres** :
-    - `_txIndex` : Index de la transaction à confirmer.
-- **Emissions** : L'événement `ConfirmTransaction`.
+- ***Paramètres***:
+    - `_txIndex` : L'index de la transaction à confirmer.
+- ***Emit***: Émet l'événement `ConfirmTransaction`.
 
-3. **revokeConfirmation**
 
-Permet à un propriétaire de révoquer sa confirmation pour une transaction.
+3. **revokeConfirmation** : Permet à un propriétaire de révoquer sa confirmation.
 
 ```solidity
     function revokeConfirmation(uint _txIndex)
@@ -185,26 +172,24 @@ Permet à un propriétaire de révoquer sa confirmation pour une transaction.
         txExists(_txIndex)
         notExecuted(_txIndex)
     {
-        require(isConfirmed[_txIndex][msg.sender], « Transaction non confirmée ») ;
+        require(isConfirmed[_txIndex][msg.sender], "Transaction not confirmed");
 
-        Stockage des transactions transaction = transactions[_txIndex] ;
+        Transaction storage transaction = transactions[_txIndex];
 
-        transaction.numConfirmations -= 1 ;
-        isConfirmed[_txIndex][msg.sender] = false ;
+        transaction.numConfirmations -= 1;
+        isConfirmed[_txIndex][msg.sender] = false;
 
-        émet RevokeConfirmation(msg.sender, _txIndex) ;
+        emit RevokeConfirmation(msg.sender, _txIndex);
     }
 ```
 
+- ***Paramètres*** :
 
-- **Paramètres** :
-    - `_txIndex` : Index de la transaction à révoquer confirmation.
+    - `_txIndex` : L'index de la transaction dont la confirmation doit être révoquée.
 
-- **Emissions** : L'événement `RevokeConfirmation`.
+- ***Emit***: Émet l'événement RevokeConfirmation.
 
-4. **executeTransaction**
-
-Exécute une transaction si elle a reçu suffisamment de confirmations.
+4. **executeTransaction** : Exécute une transaction si elle a reçu suffisamment de confirmations.
 
 ```solidity
     function executeTransaction(uint _txIndex)
@@ -213,153 +198,152 @@ Exécute une transaction si elle a reçu suffisamment de confirmations.
         txExists(_txIndex)
         notExecuted(_txIndex)
     {
-        Transaction storage transaction = transactions[_txIndex] ;
+        Transaction storage transaction = transactions[_txIndex];
 
         require(
             transaction.numConfirmations >= numConfirmationsRequired,
-            « Impossible d'exécuter la transaction »
-        ) ;
+            "Cannot execute transaction"
+        );
 
-        transaction.executed = true ;
+        transaction.executed = true;
         _rewardStudent(
             transaction.student,
             transaction.amount,
             transaction.reason
-        ) ;
+        );
 
-        émet ExecuteTransaction(msg.sender, _txIndex) ;
+        emit ExecuteTransaction(msg.sender, _txIndex);
     }
 ```
 
-- **Paramètres** :
-    - `_txIndex` : Index de la transaction à exécuter.
+- ***Paramètres***:
 
-- **Appels** : Fonction interne `_rewardStudent` pour monnayer les tokens.
+    - `_txIndex` : L'index de la transaction à exécuter.
 
-- **Emits** :
-        Evénement `ExecuteTransaction`.
-        Événement `RewardGiven` (de `_rewardStudent`).
+- ***Appelle*** la fonction interne _rewardStudent pour créer des tokens pour l'étudiant.
 
+- ***Émet***:
+    - L'événement `ExecuteTransaction`.
+    - L'événement `RewardGiven` (depuis `_rewardStudent`).
 
-#### Evénements
+#### Événements
 
 1. **SubmitTransaction**
-
-Emis lorsqu'une transaction est soumise.
+Émis lorsqu'une transaction est soumise.
 
 ```solidity
-    événement SubmitTransaction(
+    event SubmitTransaction(
         address indexed owner,
-        uint indexé txIndex,
-        adresse indexée étudiant,
-        uint256 montant,
+        uint indexed txIndex,
+        address indexed student,
+        uint256 amount,
         string reason
-    ) ;
+    );
 ```
 
+- ***Paramètres***:
 
-- **Paramètres** :
-        `owner` : Adresse du propriétaire qui a soumis la transaction.
-        `txIndex` : Index de la transaction.
-        `student` : Adresse de l'étudiant à récompenser.
-        `amount` : Montant des tokens à récompenser.
-        `reason` : Raison de la récompense.
+    - `owner` : L'adresse du propriétaire qui a soumis la transaction.
+    - `txIndex` : L'index de la transaction.
+    - `student` : L'adresse de l'étudiant à récompenser.
+    - `amount` : Le montant de tokens à attribuer.
+    - `reason` : La raison de la récompense.
 
 2. **ConfirmTransaction**
 
-Emis lorsqu'une transaction est confirmée par un propriétaire.
+Émis lorsqu'un propriétaire confirme une transaction.
 
 ```solidity
-    événement ConfirmTransaction(
-        adresse indexée propriétaire,
-        uint indexé txIndex
-    ) ;
+    event ConfirmTransaction(
+        address indexed owner,
+        uint indexed txIndex
+    );
 ```
 
-- **Paramètres** :
-    `owner` : Adresse du propriétaire qui a confirmé la transaction.
-    `txIndex` : Index de la transaction.
+- **Paramètres**:
+    `owner`: L'adresse du propriétaire qui a confirmé la transaction.
+    `txIndex`: L'index de la transaction.
 
 3. **RevokeConfirmation**
 
-Emis lorsqu'un propriétaire révoque sa confirmation.
+Émis lorsqu'un propriétaire révoque sa confirmation.
 
 ```solidity
-    événement RevokeConfirmation(
-        adresse indexée propriétaire,
-        uint indexé txIndex
-    ) ;
+    event RevokeConfirmation(
+        address indexed owner,
+        uint indexed txIndex
+    );
 ```
 
-- **Paramètres** :
-    - `owner` : Adresse du propriétaire qui a révoqué la confirmation.
-    - `txIndex` : Index de la transaction.
+- **Paramètres**:
+    - `owner`: L'adresse du propriétaire qui a révoqué la confirmation.
+    - `txIndex`:  L'index de la transaction.
 
 4. **ExecuteTransaction**
 
-Emis lorsqu'une transaction est exécutée.
+Émis lorsqu'une transaction est exécutée.
 
 ```solidity
-    événement ExecuteTransaction(
+    event ExecuteTransaction(
         address indexed owner,
-        uint indexé txIndex
-    ) ;
+        uint indexed txIndex
+    );
 ```
 
-- **Paramètres** :
-    - `owner` : Adresse du propriétaire qui a exécuté la transaction.
-    - `txIndex` : Index de la transaction.
+- **Paramètres**:
+    - `owner`: L'adresse du propriétaire qui a exécuté la transaction.
+    - `txIndex`: L'index de la transaction.
 
-5. **RewardGiven (de `_rewardStudent`)**
+5. **RewardGiven (from `_rewardStudent`)**
 
-Emis lorsqu'un étudiant est récompensé.
+Émis lorsqu'un étudiant est récompensé.
 
 ```solidity
     event RewardGiven(
         address indexed student,
-        uint256 montant,
+        uint256 amount,
         string reason
-    ) ;
+    );
 ```
 
-- **Paramètres** :
-    - `student` : Adresse de l'étudiant récompensé.
-    - ``amount` : Montant des tokens récompensés.
-    - `reason` : Raison de la récompense.
+- **Paramètres**:
+    - `student`: L'adresse de l'étudiant récompensé.
+    - `amount`: Le montant de tokens attribué.
+    - `reason`: La raison de la récompense.
 
-#### Résumé du flux de travail
+déroulement des opérations
 
-1. **Submit Transaction** :
-    Un propriétaire appelle `submitTransaction` pour proposer de récompenser un étudiant.
-    La transaction est ajoutée au tableau `transactions`.
+#### Déroulement des Opérations
 
-2. **Confirm Transaction** :
+1. **Soumettre une transaction**:
+    Un propriétaire appelle `submitTransaction` pour proposer la récompense d'un étudiant. La transaction est ajoutée au tableau `transactions`.
+
+2. **Confirmer une transaction**:
     - Les propriétaires appellent `confirmTransaction` pour approuver la transaction.
-    - Chaque confirmation incrémente `numConfirmations`.
+    - Chaque confirmation incrémente la variable `numConfirmations`.
 
-3. **Exécuter la transaction** :
+3. **Exécuter une transaction**:
     - Une fois que la transaction a reçu suffisamment de confirmations (selon `numConfirmationsRequired`), un propriétaire appelle `executeTransaction`.
-    - La transaction est marquée comme exécutée, et `_rewardStudent` est appelé pour frapper des tokens à l'étudiant.
+    - La transaction est marquée comme exécutée et la fonction `_rewardStudent` est appelée pour créer des tokens à destination de l'étudiant.
 
-4. **Revoke Confirmation** (Optionnel) :
-    Avant l'exécution, un propriétaire peut révoquer sa confirmation en appelant `revokeConfirmation`.
-    Ceci décrémente `numConfirmations`.
+4. **Révoquer une confirmation** (Optionnel):
+    Avant l'exécution, un propriétaire peut révoquer sa confirmation en appelant `revokeConfirmation`. Cela décrémente le nombre de confirmations de la transaction (`numConfirmations`).
 
 
-## Security Considerations
+## **Considérations de sécurité**
 
-- **Access Control**: Only owners can submit, confirm, revoke, or execute transactions.
-- **Prevent Double Execution**: Transactions cannot be executed more than once (`notExecuted` modifier).
-**Confirmation Tracking**: The contract ensures that an owner cannot confirm the same transaction more than once (`notConfirmed` modifier).
-- **Transaction Existence**: The contract checks that a transaction exists before any operation (`txExists` modifier).
+- **Contrôle d’accès** : Seuls les propriétaires peuvent proposer, confirmer, révoquer ou exécuter des transactions.
+- **Prévention de double exécution** : Une transaction ne peut pas être exécutée plusieurs fois (`notExecuted`).
+- **Suivi des confirmations** : Un propriétaire ne peut pas confirmer plusieurs fois la même transaction (`notYetConfirmed`).
 
-## Testing the Multisg Functionality
 
-#### Test Cases
+## Tester la fonctionnalité Multisig
 
-1. **Submitting a Transaction
+#### Cas de test
 
-**Test**: An owner can submit a transaction.
+1. **Soumission d'une transaction**
+
+**Test**: Un propriétaire peut soumettre une transaction..
 
 ```javascript
     it("Should allow an owner to submit a transaction", async function () {
@@ -373,9 +357,9 @@ Emis lorsqu'un étudiant est récompensé.
     });
 ```
 
-2. **Confirming a Transaction**
+2. **Confirmation d'une transaction**
 
-**Test**: Owners can confirm a transaction.
+**Test**: Les propriétaires peuvent confirmer une transaction.
 
 ```javascript
     it("Should allow owners to confirm a transaction", async function () {
@@ -394,9 +378,9 @@ Emis lorsqu'un étudiant est récompensé.
     });
 ```
 
-3. **Executing a Transaction**
+3. **Exécution d'une transaction**
 
-**Test**: A transaction can be executed after enough confirmations.
+**Test**: Une transaction peut être exécutée après avoir reçu suffisamment de confirmations.
 
 ```javascript
     it("Should execute a transaction after enough confirmations", async function () {
@@ -419,9 +403,9 @@ Emis lorsqu'un étudiant est récompensé.
     });
 ```
 
-4. **Revoking a Confirmation**
+4. **Révocation d'une confirmation**
 
-**Test**: An owner can revoke their confirmation before execution.
+**Test**: Un propriétaire peut révoquer sa confirmation avant l'exécution.
 
 ```javascript
     it("Should allow an owner to revoke a confirmation", async function () {
@@ -437,9 +421,9 @@ Emis lorsqu'un étudiant est récompensé.
     });
 ```
 
-5. **Preventing Unauthorized Actions**
+5. **Empêcher les actions non autorisées**
 
-- Non-Owners Cannot Submit Transactions:
+- Les non-propriétaires ne peuvent pas soumettre de transactions ::
 
 ```javascript
     it("Should not allow a non-owner to submit a transaction", async function () {
@@ -449,7 +433,7 @@ Emis lorsqu'un étudiant est récompensé.
     });
 ```
 
-- **Cannot Confirm More Than Once**:
+- **Ne peut pas confirmer plus d'une fois**:
 
 ```javascript
     it("Should not allow an owner to confirm a transaction more than once", async function () {
@@ -462,7 +446,7 @@ Emis lorsqu'un étudiant est récompensé.
     });
 ```
 
-- **Cannot Execute Without Enough Confirmations**:
+- **Ne peut pas exécuter sans assez de confirmations**:
 
 ```javascript
     it("Should not allow executing a transaction without enough confirmations", async function () {
@@ -475,7 +459,7 @@ Emis lorsqu'un étudiant est récompensé.
     });
 ```
 
-- **Cannot Execute Already Executed Transactions**:
+- **Ne peut pas exécuter des transactions déjà exécutées**:
 
 ```javascript
     it("Should not allow executing a transaction more than once", async function () {
@@ -491,10 +475,10 @@ Emis lorsqu'un étudiant est récompensé.
     });
 ```
 
-#### Helper Functions
+#### Fonctions d'assistance
 
 - **getTransactionCount**
-    Returns the total number of transactions.
+    Retourne le nombre total de transactions.
 
 ```solidity
     function getTransactionCount() public view returns (uint) {
@@ -503,7 +487,7 @@ Emis lorsqu'un étudiant est récompensé.
 ```
 
 - **getTransaction**
-    Retrieves details of a specific transaction.
+    Récupère les détails d'une transaction spécifique.
 
 ```solidity
     function getTransaction(uint _txIndex)
@@ -529,51 +513,52 @@ Emis lorsqu'un étudiant est récompensé.
     }
 ```
 
-## Usage Example
+## Exemple d'utilisation
 
-1. **Proposing a Reward Transaction**
 
-- An owner calls `submitTransaction` with the student's address, reward amount, and reason.
+1. **Proposer une transaction de récompense**
+
+- Un propriétaire appelle `submitTransaction` en passant l'adresse de l'étudiant, le montant de la récompense et la raison.
 
 ```solidity
     altarian42.submitTransaction(studentAddress, 50, "Completed Project X");
 ```
 
-2. **Confirming the Transaction**
+2. **Confirmer la transaction**
 
-- Other owners call `confirmTransaction` with the transaction index.
+- D'autres propriétaires appellent confirmTransaction en passant l'index de la transaction.
 
 ```solidity
     altarian42.confirmTransaction(0);
     altarian42.connect(addr1).confirmTransaction(0);
 ```
 
-3. **Executing the Transaction**
+3. **Exécuter la transaction**
 
-- Once enough confirmations are gathered, an owner calls `executeTransaction`.
-
+- Une fois que suffisamment de confirmations ont été recueillies, un propriétaire appelle `executeTransaction`.
+`
 ```solidity
     altarian42.executeTransaction(0);
 ```
 
-4. **Result**
-    - The student receives the tokens.
-    - The transaction is marked as executed.
-    - Relevant events are emitted.
+4. **Résultat**
+    - L'étudiant reçoit les tokens.
+    - La transaction est marquée comme exécutée.
+    - Les événements pertinents sont émis.
 
-## Important Considerations
+## Considérations importantes
 
-- **Transaction Indexing**: Transactions are indexed starting from `0` in the `transactions` array.
-- **Owner Management**: The list of owners is immutable after deployment. No functions are provided to add or remove owners dynamically.
-- **Confirmation Requirements**: The `numConfirmationsRequired` must be less than or equal to the number of owners and greater than zero.
-- **Reentrancy**: The contract does not use external calls in functions that change state after checking confirmations, reducing reentrancy risks.
+- **Indexation des transactions**: Les transactions sont indexées à partir de `0` dans le tableau `transactions`.
+- **Gestion des propriétaires**: La liste des propriétaires est immuable après le déploiement. Aucune fonction n'est prévue pour ajouter ou supprimer dynamiquement des propriétaires.
+- **Exigences de confirmation**: La valeur `numConfirmationsRequired` doit être inférieure ou égale au nombre de propriétaires et supérieure à zéro.
+- **Réentrance**: Le contrat n'effectue pas d'appels externes dans les fonctions modifiant l'état après avoir vérifié les confirmations, ce qui réduit les risques de réentrance.
 
-## Potential Extensions
+## Extensions potentielles
 
-- **Dynamic Owner Management**: Implement functions to add or remove owners with multisig approval.
-- **Transaction Types**: Extend the multisig functionality to support different types of transactions beyond rewarding students.
-- **Event Emission Enhancements**: Include more detailed events or additional parameters for better off-chain tracking.
+- **Gestion dynamique des propriétaires**: Implémenter des fonctions permettant d'ajouter ou de supprimer des propriétaires avec une approbation multisig.
+- **Types de transactions**: Étendre la fonctionnalité multisig pour prendre en charge différents types de transactions, au-delà de la simple récompense des étudiants.
+- **Émission d'événements améliorée**: Ajouter des paramètres supplémentaires aux événements afin de faciliter un meilleur suivi hors chaîne.
 
 ## Conclusion
 
-The multisignature mechanism in the `Altarian42` contract provides a robust and secure way to manage critical operations, ensuring that no single owner can act unilaterally. By requiring multiple confirmations, the contract promotes collaborative governance and reduces the risk of unauthorized actions.
+Le mécanisme de multisignature dans le contrat `Altarian42` offre une méthode robuste et sécurisée pour gérer des opérations critiques, garantissant qu'aucun propriétaire ne peut agir de manière unilatérale. En exigeant plusieurs confirmations, le contrat favorise une gouvernance collaborative et réduit le risque d'actions non autorisées.

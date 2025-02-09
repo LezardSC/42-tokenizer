@@ -25,7 +25,7 @@ The multisignature (multisig) functionality in the `Altarian42` contract ensures
 
 ###### Constructor Initialization
 
-The constructor sets up the owners and the number of confirmations required.
+The constructor initializes the owners, sets the number of confirmations required, and ensures all ownership constraints are met.
 
 ```solidity
     constructor(
@@ -142,7 +142,7 @@ Allows an owner to propose a new transaction.
 
 - **Parameters**:
     - `_student`: Address of the student to reward.
-    - `_amount`: Amount of tokens to reward.
+    - `_amount`: Amount of tokens to be awarded.
     - `_reason`: Reason for the reward.
 
 - **Emits**: `SubmitTransaction` event.
@@ -338,20 +338,20 @@ Emitted when a student is rewarded.
 
 4. **Revoke Confirmation** (Optional):
     Before execution, an owner can revoke their confirmation by calling `revokeConfirmation`.
-    This decrements `numConfirmations`.
+    This decrements the number of confirmations for the transaction (`numConfirmations`).
 
 ## Security Considerations
 
 - **Access Control**: Only owners can submit, confirm, revoke, or execute transactions.
 - **Prevent Double Execution**: Transactions cannot be executed more than once (`notExecuted` modifier).
-**Confirmation Tracking**: The contract ensures that an owner cannot confirm the same transaction more than once (`notConfirmed` modifier).
+**Confirmation Tracking**: The contract ensures that an owner does not confirm the same transaction more than once (`notConfirmed` modifier).
 - **Transaction Existence**: The contract checks that a transaction exists before any operation (`txExists` modifier).
 
 ## Testing the Multisg Functionality
 
 #### Test Cases
 
-1. **Submitting a Transaction
+1. **Submitting a Transaction**
 
 **Test**: An owner can submit a transaction.
 
@@ -566,7 +566,7 @@ Emitted when a student is rewarded.
 
 - **Dynamic Owner Management**: Implement functions to add or remove owners with multisig approval.
 - **Transaction Types**: Extend the multisig functionality to support different types of transactions beyond rewarding students.
-- **Event Emission Enhancements**: Include more detailed events or additional parameters for better off-chain tracking.
+- **Enhanced Event Emission**: Include additional event parameters to facilitate better off-chain tracking.
 
 ## Conclusion
 
