@@ -150,14 +150,14 @@ If you prefer to test and interact with the `Altarian42` smart contract using th
 
 For a deeper dive into Altarian42, [check the full project documentation](/documentation/en/Altarian42.md).
 
-## Author
-
-login: jrenault
-
 ## Contributing
 
 Contributions are welcome! Please fork the repository and submit a pull request with your changes. Ensure that all tests pass and adhere to the project's coding standards.
 
 ## License
 
-This project is licensed under the MIT License.
+This project is part of the **42 School curriculum** and follows its evaluation and submission guidelines.
+
+## Author
+
+login: jrenault
