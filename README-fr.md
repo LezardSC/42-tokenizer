@@ -4,7 +4,7 @@ Si vous êtes anglophone, [voici une version anglaise](/README.md) de ce README.
 
 Altarian42 vise à remplacer le système de wallet existant dans l'école.
 En s'appuyant sur la technologie blockchain Ethereum, nous fournissons un moyen transparent, sécurisé et décentralisé pour les étudiants de gagner et de dépenser des tokens au sein de l'écosystème de l'école.
-Les élèves peuvent gagner des tokens en réalisant des projets, en participant à des événements ou validant des achievements. Ces tokens peuvent être utilisés pour acheter des articles dans la boutique de l'école.
+Les élèves peuvent gagner des tokens en réalisant des projets, en participant à des événements ou en validant des achievements. Ces tokens peuvent être utilisés pour acheter des articles dans la boutique de l'école.
 Le contrat met en œuvre une technologie de multisignature (multisig) pour améliorer la sécurité.
 
 ## Table des matières
@@ -22,16 +22,16 @@ Le contrat met en œuvre une technologie de multisignature (multisig) pour amél
 
 ## Introduction
 
-Altarian42 est une solution basée sur la blockchain conçue pour moderniser le système de wallet de l'école. En tirant parti de la technologie blockchain, nous fournissons aux étudiants un moyen transparent, immuable et décentralisé de gagner et de dépenser des tokens au sein du système scolaire.
+Altarian42 est une solution blockchain visant à moderniser le système de wallet de l'école. En tirant parti de la technologie blockchain, nous fournissons aux étudiants un moyen transparent, immuable et décentralisé de gagner et de dépenser des tokens au sein du système scolaire.
 
 ## Caractéristiques principales
 
 - **Récompenses en tokens** : Les élèves gagnent des tokens en réalisant des projets, des événements ou des achievements sur la plateforme intra.
 - **Dépense de tokens** : Les tokens peuvent être utilisés pour acheter des articles dans la boutique de l'école.
-- **Sécurité multi-signature** : Nécessite des approbations multiples pour valider chaque récompenses, améliorant la sécurité.
+- **Sécurité multi-signature** : Nécessite des approbations multiples pour valider chaque récompense, améliorant la sécurité.
 - **Conformité à la norme ERC20** : Adhère à la norme ERC20 pour une large compatibilité.
 - **Capped Supply** : L'offre de tokens est plafonnée afin de maintenir la rareté et la valeur des tokens.
-- **tokens à brûler** : Permet de brûler des tokens lorsque les étudiants achètent des articles, réduisant ainsi le nombre total de tokens existants.
+- **tokens brûlables** : Permet de brûler des tokens lorsque les étudiants achètent des articles, réduisant ainsi le nombre total de tokens existants.
 
 ## Choix de conception et justification
 
@@ -45,7 +45,7 @@ Solidity a été choisi comme langage de programmation pour le développement du
 
 #### Déploiement sur le réseau de test Sepolia
 
-J'ai choisi de déployer et de tester le contrat sur le réseau de test Sepolia. Sepolia est un réseau de test Ethereum public qui simule l'environnement du réseau principal sans les coûts et les risques associés. Cela nous permet de tester en profondeur les fonctionnalités, la sécurité et les performances du contrat dans un cadre réaliste. L'utilisation de Sepolia permet d'identifier et de résoudre les problèmes dès le début du processus de développement.
+J'ai choisi de déployer et de tester le contrat sur le réseau de test Sepolia. Sepolia est un réseau de test Ethereum public qui simule l'environnement du réseau principal sans les coûts et les risques associés. Cela nous permet de tester en profondeur les fonctionnalités, la sécurité et les performances du contrat dans un cadre réaliste. L'utilisation de Sepolia nous permet d'identifier et de corriger les éventuels problèmes dès le début du processus de développement.
 
 #### Mise en œuvre de la multi-signature
 
@@ -74,12 +74,12 @@ Nous avons utilisé les contrats d'OpenZeppelin pour les fonctionnalités ERC20,
 
 Hardhat a été choisi comme environnement de développement pour sa flexibilité et ses puissantes fonctionnalités. Il fournit un ensemble riche d'outils pour compiler, tester et déployer des Smart Contracts. Le système de plugins extensible de Hardhat et ses capacités de débogage complètes améliorent le flux de travail de développement. Il nous permet d'écrire des tests automatisés, de simuler des environnements de blockchain et de nous assurer que le contrat se comporte comme prévu dans différents scénarios.
 
-J'ai mis à jour les chemins dans `hardhat.config.js` pour organiser les fichiers correctement, en maintenant un projet propre et structuré. La raison principale étant bien sûr les exigences du sujet.
+J'ai mis à jour les chemins dans `hardhat.config.js` afin d'organiser les fichiers correctement, maintenant ainsi un projet propre et structuré. La raison principale étant bien sûr le respect des exigences du sujet.
 
 
 #### Infura comme fournisseur
 
-Pour interagir avec la blockchain Ethereum, j'utilise Infura, un fournisseur d'infrastructure Ethereum de confiance. Infura nous permet de déployer et d'interagir avec le Smart Contract Altarian42 sur le réseau de test Sepolia sans avoir à exécuter un nœud Ethereum complet. Sa fiabilité et sa facilité d'utilisation en font un excellent choix pour les projets basés sur Ethereum.
+Pour interagir avec la blockchain Ethereum, nous utilisons Infura, un fournisseur d'infrastructure Ethereum pour interagir avec la blockchain sans avoir à exécuter un nœud complet. Sa fiabilité et sa facilité d'utilisation en font un excellent choix pour les projets basés sur Ethereum.
 
 Lors de la configuration du projet, vous aurez besoin d'une clé API Infura pour vous connecter au réseau Sepolia. Assurez-vous que votre fichier `.env` inclut l'identifiant de votre projet Infura comme indiqué ci-dessous :
 
@@ -95,7 +95,7 @@ Lors de la configuration du projet, vous aurez besoin d'une clé API Infura pour
 - **Node.js** : Versions 16.0.0 ou supérieures (v20.9.0 recommandée pour éviter des comportements inattendus, mais toutes les versions récentes devraient fonctionner).
 - **npm** : Fourni avec Node.js
 - **Git** : Pour le contrôle de version.
-- **MetaMask Wallet** : ou tout autre portefeuille. Il est recommandé mais pas obligatoire pour ajouter une clé privée afin de déployer le contrat.
+- **Portefeuille MetaMask** : ou tout autre portefeuille. Il est recommandé mais pas obligatoire pour ajouter une clé privée afin de déployer le contrat.
 - **Un compte Infura** : ou tout autre fournisseur. Vous devrez mettre à jour les configs hardhat si vous décidez d'utiliser autre chose qu'Infura. Nécessaire pour se connecter au réseau de test Sepolia.
 
 #### Etapes de l'installation
@@ -114,7 +114,7 @@ Lors de la configuration du projet, vous aurez besoin d'une clé API Infura pour
 ```
 
 3. **Créer un fichier d'environnement**
-- Créez un fichier `.env` dans le répertoire racine.
+- Créez un fichier `.env` à la racine du projet.
 - Ajoutez les variables d'environnement nécessaires. Vous pouvez trouver un modèle dans le fichier `.env.example`.
 
 4. **Compilez les contrats**
@@ -129,7 +129,7 @@ Lors de la configuration du projet, vous aurez besoin d'une clé API Infura pour
 
 6. **Déployer sur le réseau Sepolia**
 ```bash
-	npx hardhat run --network sepolia deployement/scripts/deploy.js
+	npx hardhat run --network sepolia deployment/scripts/deploy.js
 ```
 
 7. **Mise à jour de l'adresse du contrat**
