@@ -156,7 +156,7 @@ Si vous préférez tester et interagir avec le Smart Contract `Altarian42` en ut
 
 ## Plus de documentation
 
-Pour une plus grande documentation sur le projet, [regardez la documentation du projet](/documentation/fr/Altarian42.md).
+Pour une plus grande documentation sur le projet, [regardez la documentation du projet](/documentation/fr/).
 
 ## Contribuer
 
