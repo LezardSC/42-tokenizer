@@ -148,7 +148,7 @@ If you prefer to test and interact with the `Altarian42` smart contract using th
 
 ## More documentation
 
-For a deeper dive into Altarian42, [check the full project documentation](/documentation/en/Altarian42.md).
+For a deeper dive into Altarian42, [check the full project documentation](/documentation/en/).
 
 ## Contributing
 
