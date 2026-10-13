@@ -63,6 +63,14 @@ npx hardhat run --network sepolia deployment/scripts/deploy.js
 
 Après le déploiement, mettez la nouvelle adresse du contrat dans `CONTRACT_ADDRESS` du `.env` (à refaire à chaque redéploiement).
 
+### Démo
+
+```bash
+npm run demo
+```
+
+Déploie un nouveau contrat sur le réseau Hardhat local (pas besoin de `.env` ni d'ETH Sepolia) et déroule tout le cycle de vie : une récompense est proposée, confirmée par 2 owners, exécutée, puis dépensée dans la boutique, suivie de quelques appels que le multisig refuse. La variable `DEMO_DELAY` (en ms) change la pause entre les étapes.
+
 ## Documentation
 
 - [Multisig](/documentation/fr/Multisig.md) : proposer, confirmer et exécuter une récompense
