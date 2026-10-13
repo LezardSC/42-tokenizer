@@ -1,289 +1,65 @@
-# Tester le contrat Altarian42 sur Remix
+# Tester sur Remix
 
-Ce tutoriel vous guide dans le déploiement et l'interaction avec le contrat intelligent `Altarian42` en utilisant l'**IDE Remix**.
+Comment déployer et essayer `Altarian42` dans le navigateur avec [Remix](https://remix.ethereum.org), sans rien installer.
 
-## Table des matières
+## 1. Ajouter le contrat
 
-- [Prérequis](#prérequis)
-- [Étapes](#étapes)
-    - [1. Ouvrir Remix IDE](#1-ouvrir-remix-ide)
-    - [2. Configurer l'espace de travail](#2-configurer-lespace-de-travail)
-    - [3. Copier le code du Smart Contract](#3-copier-le-code-du-smart-contract)
-    - [4. Importer les contrats OpenZeppelin](#4-importer-les-contrats-openzeppelin)
-    - [5. Compiler le contrat](#5-compiler-le-contrat)
-    - [6. Déployer le contrat](#6-déployer-le-contrat)
-    - [7. Interagir avec le contrat](#7-interagir-avec-le-contrat)
-    - [8. Tester les fonctions](#8-tester-les-fonctions)
-    - [9. Simuler la propriété et les rôles](#9-simuler-la-propriété-et-les-rôles)
-    - [10. Scénarios de test](#10-scénarios-de-test)
-    - [11. Visualiser les événements et les logs](#11-visualiser-les-événements-et-les-logs)
-- [Remarques](#remarques)
-- [Déploiement sur un testnet (Optionnel)](#déploiement-sur-un-testnet-optionnel)
-    - [1. Configurer MetaMask](#1-configurer-metamask)
-    - [2. Connecter Remix à MetaMask](#2-connecter-remix-à-metamask)
-    - [3. Déployer le contrat](#3-déployer-le-contrat)
-    - [4. Interagir avec le contrat](#4-interagir-avec-le-contrat)
-- [Erreurs courantes et dépannage](#Erreurs-courantes-et-dépannage)
+1. Ouvrez https://remix.ethereum.org.
+2. Dans l'explorateur de fichiers, créez `contracts/Altarian42.sol` et collez-y le contrat.
+3. Remplacez les imports par des URLs GitHub, car Remix n'a pas les paquets npm :
 
-## Prérequis
-
-- **Navigateur Web**: Chrome, Firefox, ou tout autre navigateur moderne.
-- **Accès Internet**: Pour accéder à Remix IDE à l'adresse https://remix.ethereum.org.
-- **Extension MetaMask**: Installée et configurée (nécessaire uniquement si vous souhaitez déployer le contrat sur des testnets).
-
-## Étapes
-
-#### 1. Ouvrir Remix IDE
-
-- Accédez à https://remix.ethereum.org depuis votre navigateur web.
-
-#### 2. Configurer l'espace de travail
-
-- Dans l'IDE Remix, cliquez sur l'icône **Explorateur de fichiers** dans le panneau de gauche.
-- Créez un nouveau fichier pour votre contrat :
-    Faites un clic droit sur le dossier `contracts` et sélectionnez **New File**.
-    Nommez le fichier `Altarian42.sol`.
-
-#### 3. Copier le code du Smart Contract
-
-- Copiez le contenu de votre contrat `Altarian42.sol` dans le nouveau fichier que vous venez de créer dans Remix.
-
-#### 4. Importer les contrats OpenZeppelin
-
-- Comme le contrat utilise les contrats OpenZeppelin, vous devez les importer dans Remix.
-- Remix supporte l'importation depuis GitHub, ce qui vous permet d'importer directement les contrats OpenZeppelin.
-
-##### Mettre à jour les instructions d'importation:
-
-Remplacez les instructions d'importation dans votre contrat par les suivantes :
-
-```Solidity
-    import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/token/ERC20/ERC20.sol";
-    import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/token/ERC20/extensions/ERC20Capped.sol";
-    import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/token/ERC20/extensions/ERC20Burnable.sol";
+```solidity
+import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/token/ERC20/ERC20.sol";
+import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/token/ERC20/extensions/ERC20Capped.sol";
+import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 ```
 
-- Si ces liens venaient à être obsolètes à l'avenir, retrouvez les nouveaux sur le [GitHub officiel d'OpenZeppelin](https://github.com/OpenZeppelin/openzeppelin-contracts)
+Si ces liens ne marchent plus, récupérez les nouveaux chemins sur le [dépôt OpenZeppelin](https://github.com/OpenZeppelin/openzeppelin-contracts).
 
-#### 5. Compiler le contrat
+## 2. Compiler
 
-- Cliquez sur l'icône **Compilateur Solidity** dans le panneau de gauche (elle ressemble à un marteau).
-- Assurez-vous que la version du compilateur correspond à celle spécifiée dans le pragma de votre contrat (par exemple, `0.8.20`).
-- Cliquez sur **Compile Altarian42.sol**.
-- Si vous rencontrez des erreurs, vérifiez les instructions d'importation et assurez-vous que la bonne version de Solidity est sélectionnée.
+Dans l'onglet **Solidity Compiler**, choisissez une version 0.8.x (le projet utilise `0.8.20`) et cliquez sur **Compile Altarian42.sol**.
 
-#### 6. Déployer le contrat
+## 3. Déployer
 
-- Cliquez sur l'icône **Déployer & Exécuter les transactions** dans le panneau de gauche (elle ressemble à un bouton de lecture).
+Dans l'onglet **Deploy & Run Transactions** :
 
-##### Sélection de l'environnement
+- **Environment** : `Remix VM` pour tester en local, ou `Injected Provider - MetaMask` pour déployer sur Sepolia (voir plus bas).
+- **Arguments du constructeur** : owners, confirmations requises, cap. Par exemple, avec trois comptes du menu **Account** :
 
-- Dans la section **Environnement**, sélectionnez l'une des options suivantes :
-    - **JavaScript VM (Cancun (ou London))**: Pour les tests locaux dans Remix.
-    - **Injected Provider - MetaMask**: Pour déployer sur un testnet via MetaMask.
-
-##### Paramètres du constructeur
-
-Vous devez saisir les paramètres du constructeur :
-
-1. **_owners (address[])**: Un tableau d'adresses des propriétaires.
-    - Exemple:
-        - Si vous utilisez les comptes de la JavaScript VM de Remix :
-    ```json
-        ["0x5B3...Eed", "0xAb8...09b", "0x4B0...e37"]
-    ```
-        - Pour obtenir les adresses, copiez-les depuis le menu déroulant **Accounts**.
-
-2. **_numConfirmationsRequired (uint256)**: Le nombre de confirmations requis pour les transactions multisignatures.
-    - **Exemple**: `2`
-
-3. **cap (uint256)**: Le plafond de tokens (limite de l'offre totale).
-
-    - **Example**: Pour un plafond de 1 000 000 de tokens, saisissez `1000000`.
-
-    - **Note**: N'incluez pas les décimales ici ; le contrat gère la conversion.
-
-**Saisie des paramètres du constructeur**
-
-- Dans la section **Déployer**, entrez les paramètres au format suivant :
-
-```json
-    ["<owner1>", "<owner2>", "<owner3>"], <numConfirmationsRequired>,
-    <cap>
+```
+["0x5B3...Eed", "0xAb8...09b", "0x4B0...e37"], 2, 1000000
 ```
 
-- **Exemple**:
+Le cap est en tokens entiers, sans décimales. Cliquez ensuite sur **Deploy**. Le contrat apparaît dans **Deployed Contracts**.
 
-```json
-    ["0x5B3...Eed", "0xAb8...09b", "0x4B0...e37"],
-    2,
-    1000000
-```
-Assurez-vous de séparer les paramètres par des virgules et que le tableau d'adresses soit encadré par des crochets [].
+## 4. Essayer
 
-##### Déploiement
+Changez de compte actif dans le menu **Account** pour jouer différents owners ou un étudiant.
 
-- Cliquez sur **deploy** ou **transact**.
-- Si vous déployez sur un testnet, MetaMask vous demandera de confirmer la transaction.
+1. **Proposer une récompense** : en tant qu'owner 1, appelez `submitTransaction` avec une adresse d'étudiant, un montant (ex. `50`) et une raison.
+2. **Confirmer** : en tant qu'owner 1 puis owner 2, appelez `confirmTransaction(0)`.
+3. **Exécuter** : depuis n'importe quel owner, appelez `executeTransaction(0)`.
+4. **Vérifier** : `balanceOf(student)` et `getStudentAchievements(student)`.
+5. **Acheter** : en tant qu'étudiant, appelez `buyGoodies("T-Shirt", 20)`, puis vérifiez que `balanceOf` et `totalSupply` ont baissé.
 
-#### 7. Interagir avec le contrat
+Les montants (`_amount`, `cost`) sont toujours en tokens entiers ; le contrat ajoute les décimales. Les events et les messages d'erreur s'affichent dans la console en bas.
 
-- Après le déploiement, l'instance du contrat apparaîtra sous **Contrats déployés**.
-- Développez le contrat pour afficher les fonctions disponibles.
+À essayer aussi : exécuter sans assez de confirmations, appeler une fonction d'owner depuis un autre compte, confirmer deux fois, acheter avec un solde insuffisant.
 
-#### 8. Tester les fonctions
+## Déployer sur Sepolia
 
-- **Fonctions multisignatures**:
-    - `submitTransaction`: Proposer une nouvelle transaction.
-    - `confirmTransaction`: Confirmer une transaction proposée.
-    - `executeTransaction`: Exécuter une transaction après avoir reçu suffisamment de confirmations.
-    - `revokeConfirmation`: Révoquer votre confirmation avant l'exécution.
+1. Dans MetaMask, activez les réseaux de test et sélectionnez **Sepolia**.
+2. Récupérez de l'ETH de test sur un faucet, par exemple https://sepolia-faucet.pk910.de/.
+3. Dans Remix, choisissez `Injected Provider - MetaMask` comme environnement et acceptez la connexion.
+4. Déployez comme plus haut ; MetaMask demande de confirmer chaque transaction.
 
-- **Fonctions liées aux tokens **:
-    - `balanceOf`: Vérifier le solde de tokens d'une adresse.
-    - `getStudentAchievements`: Visualiser les réalisations d'un étudiant.
-    - `buyGoodies`: Dépenser des tokens pour acheter des articles.
+Vous pouvez suivre les transactions sur [Sepolia Etherscan](https://sepolia.etherscan.io/).
 
-#### 9. Simuler la propriété et les rôles
+## Problèmes courants
 
-- **Changement de compte**:
-    - Utilisez le menu déroulant **Accounts** en haut du panneau **Déployer & Exécuter** les transactions pour changer de compte actif.
-    - Cela vous permet de simuler différents propriétaires et étudiants.
-
-- **Note**: Dans la JavaScript VM, les comptes sont préfinancés en ETH et possèdent des adresses distinctes.
-
-#### 10. Scénarios de test
-
-##### a. Soumettre et confirmer une transaction
-
-1. **Soumettre une transaction**:
-
-    - En tant que **Owner1**, appelez `submitTransaction` avec :
-        `_student`: Adresse de l'étudiant (par exemple, un autre compte).
-        `_amount`: Montant de la récompense (par exemple, 50).
-        `_reason`: Motif de la récompense (par exemple, `"Excellent Performance"`).
-
-2. **Confirmer la transaction**:
-
-    - Passez à **Owner2** et appelez `confirmTransaction` avec :
-        `_txIndex`: L'indice de la transaction (par exemple, `0` pour la première transaction).
-
-3. **Optionnel**: Répétez la confirmation avec d'autres propriétaires si nécessaire.
-
-**b. Exécuter une transaction**
-
-- Une fois les confirmations requises obtenues, en tant que propriétaire, appelez `executeTransaction` avec :
-    - `_txIndex`: L'indice de la transaction à exécuter.
-
-- Vérifiez que le solde de l'étudiant a augmenté en conséquence.
-
-**c. Vérifier les soldes et les réalisations**
-
-- En tant qu'étudiant, appelez `balanceOf` avec votre adresse pour vérifier votre solde de tokens.
-- Appelez `getStudentAchievements` avec votre adresse pour visualiser vos réalisations.
-
-**d. Achat d'articles**
-
-- En tant qu'étudiant, appelez `buyGoodies` avec :
-    - `item`: Nom de l'article (par exemple, `"T-Shirt"`).
-    - `cost`: Coût de l'article en tokens (par exemple, `20`).
-
-- Vérifiez que votre solde diminue et que l'offre totale se réduit.
-
-#### 11. Visualiser les événements et les logs
-
-- La **Console** située en bas de Remix affiche les logs et les événements.
-
-- Recherchez des événements tels que :
-    - `SubmitTransaction`
-    - `ConfirmTransaction`
-    - `ExecuteTransaction`
-    - `RewardGiven`
-    - `GoodiePurchased`
-
-- Ces événements vous aident à vérifier que les actions se déroulent comme prévu.
-
-## Remarques
-
-- **Gestion des décimales**:
-    - Saisissez les montants (comme `_amount` et `cost`) sans tenir compte des décimales.
-    - The contract automatically handles the conversion to the correct decimal places.
-
-- **Format des adresses**:
-    - Utilisez les adresses fournies dans le menu déroulant **Accounts**.
-    - Assurez-vous que les adresses soient encadrées par des guillemets lorsqu'elles sont saisies sous forme de chaînes de caractères.
-
-- **Gestion des erreurs**:
-
-    - Si une transaction échoue, vérifiez le message d'erreur dans la **Console**.
-
-    - Les erreurs courantes incluent :
-        - Pas assez de confirmations.
-        - Vous n'êtes pas propriétaire.
-        - Solde insuffisant.
-        - Indice de transaction invalide.
-
-- **Tester les cas limites**:
-    - Essayez de soumettre des transactions avec des données invalides (par exemple, un montant nul, des adresses invalides).
-    - Tentez d'exécuter des transactions sans avoir reçu suffisamment de confirmations.
-
-## Déploiement sur un testnet (Optionnel)
-
-#### 1. Configurer MetaMask
-
-- **Installer MetaMask**:
-    - Ajoutez l'extension MetaMask à votre navigateur.
-
-- **Ajouter le réseau Sepolia**:
-    - Ouvrez MetaMask et cliquez sur le menu déroulant des réseaux.
-    - Sélectionnez **afficher les testnets**.
-    - Sélectionnez **Sepolia**
-    - Si ce réseau n'apparaît pas, cliquez sur **Ajouter un réseau** et saisissez les détails du réseau Sepolia.
-
-- **Obtenir des testnet ETH**:
-
-    - Utilisez un faucet Sepolia pour obtenir des testnet ETH.
-    - [Exemples de faucets](https://sepolia-faucet.pk910.de/)
-
-#### 2. Connecter Remix à MetaMask
-
-- Dans Remix, sous **Environnement**, sélectionnez **Injected Provider** - MetaMask.
-- Approuvez la connexion dans MetaMask lorsqu'il vous le demande.
-
-#### 3. Déployer le contrat
-
-- Suivez les mêmes étapes que dans la section [Déployer le contrat](#6-deploy-the-contract).
-- Assurez-vous de disposer de suffisamment d'ETH de test pour couvrir les frais de gas.
-
-#### 4. Interagir avec le contrat
-
-- Utilisez vos comptes MetaMask pour interagir avec les fonctions du contrat.
-- Les transactions apparaîtront dans MetaMask pour approbation.
-- Surveillez les transactions à l'aide d'un explorateur de blocs tel que [Etherscan pour Sepolia](https://sepolia.etherscan.io/).
-
-## Erreurs courantes et dépannage
-
-- **Erreurs de compilation**:
-    - Assurez-vous que la version du compilateur Solidity dans Remix correspond à la version spécifiée dans le pragma de votre contrat.
-    - Vérifiez que les instructions d'importation sont correctes et accessibles.
-
-- **Arguments de constructeur invalides**:
-    - Vérifiez que les tableaux sont correctement formatés (par exemple, `["addresse1", "addresse2"]`).
-    - Assurez-vous que les valeurs numériques sont des entiers et ne comportent pas de guillemets.
-
-- **La transaction échoue avec 'Not Owner'**:
-    - Vérifiez que le compte que vous utilisez figure parmi les propriétaires.
-    - Consultez la liste des propriétaires initialisée lors du déploiement.
-
-- **Gaz insuffisant**:
-    - Si vous déployez sur un testnet, assurez-vous d'avoir suffisamment d'ETH de test dans votre compte MetaMask.
-
-- **Impossible de connecter MetaMask à Remix**:
-    - Rafraîchissez à la fois Remix et MetaMask.
-    - Vérifiez que MetaMask est déverrouillé et connecté au bon réseau.
-
-- **Les événements ne s'affichent pas **:
-    - Assurez-vous de vérifier l'onglet Logs dans la console de Remix.
-    - Vérifiez que la transaction a bien été effectuée.
-
-En suivant ce tutoriel, vous devriez être en mesure de déployer et d'interagir avec le contrat `Altarian42` en utilisant l'IDE Remix. Cette approche pratique vous permet de tester la fonctionnalité du contrat et de comprendre son comportement dans un environnement contrôlé.
+- **Erreur de compilation** : vérifiez la version du compilateur et les URLs d'import.
+- **Arguments du constructeur invalides** : les adresses doivent être entre guillemets dans `[]`, les nombres non.
+- **`Not owner`** : le compte actif ne fait pas partie des owners passés au constructeur.
+- **Pas assez de gas sur Sepolia** : récupérez plus d'ETH de test.
+- **MetaMask ne se connecte pas** : déverrouillez-le, vérifiez qu'il est sur Sepolia, rechargez Remix.
