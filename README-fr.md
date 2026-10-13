@@ -47,7 +47,11 @@ Créez un fichier `.env` à la racine, à partir de `.env.example` :
 PRIVATE_KEY = ''
 INFURA_SEPOLIA_ENDPOINT = 'https://sepolia.infura.io/v3/YOUR_INFURA_PROJECT_ID'
 CONTRACT_ADDRESS = ''
+OWNERS = ''
+NUM_CONFIRMATIONS_REQUIRED = ''
 ```
+
+`OWNERS` est une liste d'adresses d'owners séparées par des virgules (10 maximum) et `NUM_CONFIRMATIONS_REQUIRED` le nombre d'entre eux qui doivent approuver une récompense. S'ils sont vides, le déployeur est le seul owner et 1 confirmation suffit.
 
 ### Compiler, tester, déployer
 

@@ -47,7 +47,11 @@ Create a `.env` file at the root, based on `.env.example`:
 PRIVATE_KEY = ''
 INFURA_SEPOLIA_ENDPOINT = 'https://sepolia.infura.io/v3/YOUR_INFURA_PROJECT_ID'
 CONTRACT_ADDRESS = ''
+OWNERS = ''
+NUM_CONFIRMATIONS_REQUIRED = ''
 ```
+
+`OWNERS` is a comma-separated list of owner addresses (10 max) and `NUM_CONFIRMATIONS_REQUIRED` is how many of them must approve a reward. If they're left empty, the deployer is the only owner and 1 confirmation is required.
 
 ### Compile, test, deploy
 
